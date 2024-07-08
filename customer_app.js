@@ -39,17 +39,21 @@ app.get('/', (req, verifyToken, res) => {
 })
 
 app.post('/api/login', async (req, res) => {
-    const data = req.body;
-    let username = data['user_name'];
-    let password = data['password'];
+    try {
+        const data = req.body;
+        let username = data['user_name'];
+        let password = data['password'];
 
-    const user = usersDictionary[username];
-    const passwordMatched = await bcrypt.compare(password, user.hashedpwd);
-    if (!user || !passwordMatched){
-        res.status(401).send('User information incorrect');
-        return;
+        const user = usersDictionary[username];
+        const passwordMatched = await bcrypt.compare(password, user.hashedpwd);
+        if (!user || !passwordMatched){
+            res.status(401).send('User information incorrect');
+            return;
+        }
+        res.status(200).send('Login successfully');
+    } catch (error){
+        res.status(400).json({message: error.message});
     }
-    res.status(200).send('Login successfully');
     // const documents = await Customers.find({
     //     user_name: user_name
     // });
@@ -128,50 +132,64 @@ app.get('/api/logout', async (req, res) => {
 });
 
 app.post('/api/add_customer', async (req, res) => {
-    const data = req.body;
-    const username = data['user_name'];
+    try {
+        const data = req.body;
+        const username = data['user_name'];
 
-    const documents = await Customers.find({
-        user_name: username,
-    });
+        const documents = await Customers.find({
+            user_name: username,
+        });
 
-    if (documents.length > 0){
-        res.status(409).send('User already exists');
-        return;
+        if (documents.length > 0){
+            res.status(409).send('User already exists');
+            return;
+        }
+
+        const hashedpwd = await bcrypt.hash(data['password'], saltRounds);
+        usersDictionary[username] = { hashedpwd };
+
+        //Creating a customer with password hashed
+        const customer = new Customers({
+            "user_name": username,
+            "age": data['age'],
+            "password": hashedpwd,
+            "email": data['email']
+        });
+
+        await customer.save();
+
+        res.status(201).send('Customer added successfully');
     }
-
-    const hashedpwd = await bcrypt.hash(data['password'], saltRounds);
-    usersDictionary[username] = { hashedpwd };
-
-    //Creating a customer with password hashed
-    const customer = new Customers({
-        "user_name": username,
-        "age": data['age'],
-        "password": hashedpwd,
-        "email": data['email']
-    });
-
-    await customer.save();
-
-    res.status(201).send('Customer added successfully');
+    catch (error){
+        res.status(500).json({ message: error.message });
+    }
 })
 
 app.get('/api/employees', async (req, res) => {
-    const documents = await Employees.find();
-    res.json(documents);
+    try {
+        const documents = await Employees.find();
+        res.json(documents);
+    } catch (error){
+        res.status(500).json({message: error.message});
+    }
 });
 
 app.post('/api/add_employee', async (req, res)=> {
-    const data = req.body;
-    const emp = new Employees({
-        "emp_name": data["name"],
-        "age": data["age"],
-        "location": data["location"],
-        "email": data["email"]
-    });
+    try {
+        const data = req.body;
+        const emp = new Employees({
+            "emp_name": data["name"],
+            "age": data["age"],
+            "location": data["location"],
+            "email": data["email"]
+        });
 
-    await emp.save();
-    res.json({ message: "Employee added." })
+        await emp.save();
+        res.json({ message: "Employee added." })
+    }
+    catch (error){
+        res.status(500).json({ message: error.message });
+    }
 })
 
 
