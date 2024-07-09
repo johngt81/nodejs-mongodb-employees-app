@@ -8,7 +8,22 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=user
       - MONGO_INITDB_ROOT_PASSWORD=pass
-    volumes:
-      - type: bind
-        source: ./data
-        target: /data/db
+    # volumes:
+    #   - type: bind
+    #     source: ./data
+    #     target: /data/db
+    networks:
+      - app-network
+  
+  app:
+    image: customerapp
+    ports: 
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

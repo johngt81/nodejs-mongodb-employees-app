@@ -13,3 +13,8 @@ db.my_collection.insertOne({});
 db.my_collection.find();
 
 https://www.mongodb.com/docs/mongodb-shell/
+
+
+Deployment:
+docker build . -t customerapp
+docker compose up

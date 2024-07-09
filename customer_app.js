@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const Customers = require('./customer');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const saltRounds = 5;
 const session = require('express-session');
 const uuid = require('uuid');
@@ -30,7 +30,8 @@ const logger = winston.createLogger({
 const app = express();
 
 const port = 3000;
-const uri = "mongodb://user:pass@localhost:27017";
+// const uri = "mongodb://user:pass@localhost:27017";
+const uri = "mongodb://user:pass@mongodb:27017";
 mongoose.connect(uri, { 'dbName': 'customerDB'});
 
 //Middleware to parse JSON requests
@@ -61,12 +62,12 @@ app.use((err, req, res, next) => {
     })
 });
 //Handle all nvalid requests that comes to the app
-app.all('*', (req, res, next)=>{
-    const err = new Error('Cannot find url');
-    err.status = "Endpoint failure";
-    err.statusCode = 404;
-    next(err);
-})
+// app.all('*', (req, res, next)=>{
+//     const err = new Error('Cannot find url');
+//     err.status = "Endpoint failure";
+//     err.statusCode = 404;
+//     next(err);
+// })
 
 //Endpoints
 //Sample endpoint with middleware
