@@ -11,6 +11,21 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const secretKey = 'mySecretKey';
 let usersDictionary = {};
+const winston = require('winston');
+const readline = require('node:readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+const { ValidationError, InvalidUserError, AuthenticatedFailed } = require('./errors/CustomError');
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.Console(),
+        new winston.transports.File({filename: 'logfile.log'})
+    ]
+})
 
 const app = express();
 
@@ -32,10 +47,42 @@ app.use(session({
     saveUninitialized: true,
     genid: () => uuid.v4()
 }));
+//Global Error handler middleware
+app.use((err, req, res, next) => {
+    //Set default value
+    err.statusCode = err.statusCode || 500;
+    err.status = err.status || 'Error';
+
+    console.log(err.stack);
+
+    res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message
+    })
+});
+//Handle all nvalid requests that comes to the app
+app.all('*', (req, res, next)=>{
+    const err = new Error('Cannot find url');
+    err.status = "Endpoint failure";
+    err.statusCode = 404;
+    next(err);
+})
 
 //Endpoints
-app.get('/', (req, verifyToken, res) => {
-    res.send('Heeelello')
+//Sample endpoint with middleware
+// app.get('/', verifyToken, (req, res) => {
+
+app.get('/', (req, res, next) => {
+    try {
+        logger.info('Hello World');
+        logger.error('Error thrown');
+        logger.warn('This is a warning');
+        throw new ValidationError();
+        res.send('Heeelello');
+    }
+    catch (error){
+        next(error);
+    }
 })
 
 app.post('/api/login', async (req, res) => {
