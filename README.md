@@ -18,3 +18,23 @@ https://www.mongodb.com/docs/mongodb-shell/
 Deployment:
 docker build . -t customerapp
 docker compose up
+
+Libraries
+
+validation library
+
+
+ODM
+Mongoose
+ORM
+Sequelize
+
+Validation library for user input
+Joy
+
+Logging library. Various logging levels, custom log format and multiple logs destination
+Winston
+Bunyan: Logging library
+
+ESLinting
+Linling tool
